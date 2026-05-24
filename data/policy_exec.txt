@@ -1,0 +1,9 @@
+This file should contain "Secret" data that only high-level managers or executives should access.  
+
+Salary Brackets: Engineering Manager salaries range from $120,000 to $160,000.  
+
+M&A Strategy: The company is planning to acquire "Tech-Startup X" in Q4 2026 for $5 million.
+
+Performance Bonuses: Senior Executives are eligible for a 20% annual performance bonus based on company revenue targets.
+
+Termination Protocol: High-level termination requires approval from the Board of Directors.

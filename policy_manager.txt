@@ -1,0 +1,5 @@
+Team headcount budgets for Q1 2025 have been approved at 3 new hires per department.
+Managers have access to their direct reports salary bands for performance review purposes.
+The engineering team OKRs for this quarter are: reduce latency by 20%, ship RAG feature, grow team to 12.
+Promotion decisions must be approved by both the department head and HR before announcement.
+Quarterly bonus pool for managers is 15% of annual salary based on team performance metrics.

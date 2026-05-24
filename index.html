@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Secure Corporate AI</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #13131a;
+            --surface2: #1c1c26;
+            --border: rgba(255, 255, 255, 0.07);
+            --border2: rgba(255, 255, 255, 0.12);
+            --text: #e8e8f0;
+            --muted: #6b6b80;
+            --accent: #7c6dfa;
+            --accent2: #5b9cf6;
+            --green: #22c55e;
+            --red: #ef4444;
+            --amber: #f59e0b;
+            --intern-bg: rgba(34, 197, 94, 0.08);
+            --intern-border: rgba(34, 197, 94, 0.25);
+            --intern-text: #4ade80;
+            --manager-bg: rgba(91, 156, 246, 0.08);
+            --manager-border: rgba(91, 156, 246, 0.25);
+            --manager-text: #93c5fd;
+            --exec-bg: rgba(245, 158, 11, 0.08);
+            --exec-border: rgba(245, 158, 11, 0.25);
+            --exec-text: #fcd34d;
+            --font: 'DM Sans', sans-serif;
+            --mono: 'DM Mono', monospace;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        /* subtle grid bg */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(124, 109, 250, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124, 109, 250, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 960px;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .header h1 {
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+
+        .header-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-badge {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 20px;
+            padding: 4px 12px 4px 4px;
+            font-size: 13px;
+        }
+
+        .user-badge.visible {
+            display: flex;
+        }
+
+        .avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 500;
+            font-family: var(--mono);
+        }
+
+        .tier-pill {
+            font-size: 10px;
+            font-family: var(--mono);
+            padding: 2px 7px;
+            border-radius: 10px;
+            border: 1px solid;
+        }
+
+        .tier-intern {
+            background: var(--intern-bg);
+            border-color: var(--intern-border);
+            color: var(--intern-text);
+        }
+
+        .tier-manager {
+            background: var(--manager-bg);
+            border-color: var(--manager-border);
+            color: var(--manager-text);
+        }
+
+        .tier-exec {
+            background: var(--exec-bg);
+            border-color: var(--exec-border);
+            color: var(--exec-text);
+        }
+
+        .av-intern {
+            background: var(--intern-bg);
+            color: var(--intern-text);
+        }
+
+        .av-manager {
+            background: var(--manager-bg);
+            color: var(--manager-text);
+        }
+
+        .av-exec {
+            background: var(--exec-bg);
+            color: var(--exec-text);
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid var(--border2);
+            color: var(--muted);
+            font-size: 12px;
+            font-family: var(--font);
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: none;
+            transition: all 0.15s;
+        }
+
+        .logout-btn:hover {
+            color: var(--text);
+            border-color: var(--border2);
+            background: var(--surface);
+        }
+
+        .logout-btn.visible {
+            display: block;
+        }
+
+        /* ── SCREENS ── */
+        .screen {
+            display: none;
+            animation: fadeUp 0.3s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── LOGIN ── */
+        .login-wrap {
+            max-width: 380px;
+            margin: 0 auto;
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .login-wrap h2 {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+        }
+
+        .login-wrap p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .field {
+            margin-bottom: 1rem;
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-family: var(--mono);
+        }
+
+        .field input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .field input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            padding: 11px;
+            color: white;
+            font-family: var(--font);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.15s;
+            margin-top: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.88;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .login-hint {
+            margin-top: 1.5rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .login-hint p {
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-family: var(--mono);
+        }
+
+        .hint-user {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-family: var(--mono);
+            padding: 3px 0;
+        }
+
+        .hint-user span:first-child {
+            color: var(--text);
+        }
+
+        .error-msg {
+            font-size: 12px;
+            color: var(--red);
+            margin-top: 8px;
+            display: none;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+
+        /* ── TABS ── */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 1.5rem;
+            width: fit-content;
+        }
+
+        .tab {
+            padding: 7px 18px;
+            border-radius: 7px;
+            font-size: 13px;
+            cursor: pointer;
+            color: var(--muted);
+            transition: all 0.15s;
+            border: none;
+            background: none;
+            font-family: var(--font);
+        }
+
+        .tab.active {
+            background: var(--surface2);
+            color: var(--text);
+        }
+
+        /* ── CHAT ── */
+        .chat-container {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: 1fr;
+        }
+
+        .chat-box {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 460px;
+        }
+
+        .chat-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .chat-header .name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border2) transparent;
+        }
+
+        .msg {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            max-width: 85%;
+        }
+
+        .msg.user {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .msg.ai {
+            align-self: flex-start;
+        }
+
+        .msg-bubble {
+            padding: 9px 13px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .msg.user .msg-bubble {
+            background: var(--accent);
+            color: white;
+            border-radius: 10px 10px 2px 10px;
+        }
+
+        .msg.ai .msg-bubble {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px 10px 10px 2px;
+        }
+
+        .msg.ai.blocked .msg-bubble {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .msg.ai.allowed .msg-bubble {
+            background: rgba(34, 197, 94, 0.06);
+            border-color: rgba(34, 197, 94, 0.18);
+        }
+
+        .msg-time {
+            font-size: 10px;
+            color: var(--muted);
+            font-family: var(--mono);
+        }
+
+        .chat-input-area {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 9px 14px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent);
+        }
+
+        .send-btn {
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            padding: 9px 16px;
+            color: white;
+            font-family: var(--mono);
+            font-size: 12px;
+            cursor: pointer;
+            transition: opacity 0.15s;
+            white-space: nowrap;
+        }
+
+        .send-btn:hover {
+            opacity: 0.85;
+        }
+
+        .send-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        /* ── DEMO MODE ── */
+        .demo-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .demo-question {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .demo-question textarea {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 9px 14px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 13px;
+            outline: none;
+            resize: none;
+            height: 52px;
+            transition: border-color 0.15s;
+        }
+
+        .demo-question textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .demo-send {
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            padding: 9px 18px;
+            color: white;
+            font-family: var(--font);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.15s;
+            white-space: nowrap;
+        }
+
+        .demo-send:hover {
+            opacity: 0.85;
+        }
+
+        .demo-result {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .demo-result-header {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .demo-result-header .name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .demo-result-body {
+            padding: 14px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--muted);
+            min-height: 100px;
+            font-style: italic;
+        }
+
+        .demo-result-body.blocked {
+            color: #fca5a5;
+            font-style: normal;
+        }
+
+        .demo-result-body.answered {
+            color: var(--text);
+            font-style: normal;
+        }
+
+        /* ── DOCS USED ── */
+        .docs-used {
+            margin-top: 6px;
+            font-size: 10px;
+            color: var(--muted);
+            font-family: var(--mono);
+        }
+
+        /* ── LOADING DOTS ── */
+        .loading-dots span {
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--muted);
+            margin: 0 2px;
+            animation: dot 1.2s infinite;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes dot {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0.6);
+                opacity: 0.4;
+            }
+
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 600px) {
+            .demo-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+
+        <div class="header">
+            <div class="logo">🔐</div>
+            <h1>Secure Corporate AI</h1>
+            <div class="header-right">
+                <div class="user-badge" id="userBadge">
+                    <div class="avatar" id="userAvatar"></div>
+                    <span id="userNameLabel"></span>
+                    <span class="tier-pill" id="userTierPill"></span>
+                </div>
+                <button class="logout-btn" id="logoutBtn" onclick="logout()">logout</button>
+            </div>
+        </div>
+
+        <!-- LOGIN SCREEN -->
+        <div class="screen active" id="loginScreen">
+            <div class="login-wrap">
+                <h2>Sign in</h2>
+                <p>Access is restricted based on your clearance level.</p>
+                <div class="field">
+                    <label>USERNAME</label>
+                    <input type="text" id="username" placeholder="alice" autocomplete="off" />
+                </div>
+                <div class="field">
+                    <label>PASSWORD</label>
+                    <input type="password" id="password" placeholder="••••••••" />
+                </div>
+                <div class="error-msg" id="loginError">Invalid username or password.</div>
+                <button class="btn-primary" id="loginBtn" onclick="doLogin()">Sign in</button>
+
+                <div class="login-hint">
+                    <p>TEST ACCOUNTS</p>
+                    <div class="hint-user"><span>alice / pass123</span><span
+                            style="color:var(--intern-text)">intern</span></div>
+                    <div class="hint-user"><span>carol / pass789</span><span
+                            style="color:var(--manager-text)">manager</span></div>
+                    <div class="hint-user"><span>bob / pass456</span><span style="color:var(--exec-text)">exec</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHAT SCREEN -->
+        <div class="screen" id="chatScreen">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('chat')">Chat</button>
+                <button class="tab" onclick="switchTab('demo')">Side-by-side demo</button>
+            </div>
+
+            <!-- SINGLE CHAT TAB -->
+            <div id="chatTab">
+                <div class="chat-container">
+                    <div class="chat-box">
+                        <div class="chat-header">
+                            <div class="avatar" id="chatAvatar"></div>
+                            <span class="name" id="chatName"></span>
+                            <span class="tier-pill" id="chatTier"></span>
+                        </div>
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="msg ai">
+                                <div class="msg-bubble">Hello! Ask me anything about company policies. I'll only show
+                                    information you're authorised to see.</div>
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input class="chat-input" id="chatInput" placeholder="Ask anything..."
+                                onkeydown="if(event.key==='Enter') sendMessage()" />
+                            <button class="send-btn" id="sendBtn" onclick="sendMessage()">send →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIDE BY SIDE DEMO TAB -->
+            <div id="demoTab" style="display:none;">
+                <div class="demo-question">
+                    <textarea id="demoQuestion"
+                        placeholder="Type a question to ask all users simultaneously...">What are the engineering manager salaries?</textarea>
+                    <button class="demo-send" onclick="runDemo()">Ask all →</button>
+                </div>
+                <div class="demo-container" id="demoResults">
+                    <div class="demo-result">
+                        <div class="demo-result-header">
+                            <div class="avatar av-intern" style="width:22px;height:22px;font-size:9px;">A</div>
+                            <span class="name">alice</span>
+                            <span class="tier-pill tier-intern">intern</span>
+                        </div>
+                        <div class="demo-result-body" id="demoAlice">Ask a question to see alice's response...</div>
+                    </div>
+                    <div class="demo-result">
+                        <div class="demo-result-header">
+                            <div class="avatar av-manager" style="width:22px;height:22px;font-size:9px;">C</div>
+                            <span class="name">carol</span>
+                            <span class="tier-pill tier-manager">manager</span>
+                        </div>
+                        <div class="demo-result-body" id="demoCarol">Ask a question to see carol's response...</div>
+                    </div>
+                    <div class="demo-result">
+                        <div class="demo-result-header">
+                            <div class="avatar av-exec" style="width:22px;height:22px;font-size:9px;">B</div>
+                            <span class="name">bob</span>
+                            <span class="tier-pill tier-exec">exec</span>
+                        </div>
+                        <div class="demo-result-body" id="demoBob">Ask a question to see bob's response...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API = 'http://localhost:8000'
+
+        let currentToken = null
+        let currentUser = null
+
+        // ── LOGIN ──
+        async function doLogin() {
+            const username = document.getElementById('username').value.trim()
+            const password = document.getElementById('password').value.trim()
+            const btn = document.getElementById('loginBtn')
+            const err = document.getElementById('loginError')
+
+            if (!username || !password) return
+            btn.disabled = true
+            btn.textContent = 'Signing in...'
+            err.classList.remove('show')
+
+            try {
+                const res = await fetch(`${API}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                })
+                const data = await res.json()
+                if (!res.ok) throw new Error()
+
+                currentToken = data.token
+                currentUser = { username: data.username, clearance: data.clearance }
+                setupUI()
+                showScreen('chatScreen')
+
+            } catch {
+                err.classList.add('show')
+                btn.disabled = false
+                btn.textContent = 'Sign in'
+            }
+        }
+
+        function setupUI() {
+            const { username, clearance } = currentUser
+            const initials = username[0].toUpperCase()
+            const tierClass = `tier-${clearance}`
+            const avClass = `av-${clearance}`
+
+            // header badge
+            const badge = document.getElementById('userBadge')
+            const avatar = document.getElementById('userAvatar')
+            badge.classList.add('visible')
+            avatar.textContent = initials
+            avatar.className = `avatar ${avClass}`
+            document.getElementById('userNameLabel').textContent = username
+            const pill = document.getElementById('userTierPill')
+            pill.textContent = clearance
+            pill.className = `tier-pill ${tierClass}`
+            document.getElementById('logoutBtn').classList.add('visible')
+
+            // chat header
+            const chatAv = document.getElementById('chatAvatar')
+            chatAv.textContent = initials
+            chatAv.className = `avatar ${avClass}`
+            document.getElementById('chatName').textContent = username
+            const chatTier = document.getElementById('chatTier')
+            chatTier.textContent = clearance
+            chatTier.className = `tier-pill ${tierClass}`
+        }
+
+        function logout() {
+            currentToken = null
+            currentUser = null
+            document.getElementById('userBadge').classList.remove('visible')
+            document.getElementById('logoutBtn').classList.remove('visible')
+            document.getElementById('chatMessages').innerHTML = `
+    <div class="msg ai">
+      <div class="msg-bubble">Hello! Ask me anything about company policies. I'll only show information you're authorised to see.</div>
+    </div>`
+            document.getElementById('username').value = ''
+            document.getElementById('password').value = ''
+            showScreen('loginScreen')
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
+            document.getElementById(id).classList.add('active')
+        }
+
+        // ── TABS ──
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (tab === 'chat' && i === 0) || (tab === 'demo' && i === 1)))
+            document.getElementById('chatTab').style.display = tab === 'chat' ? 'block' : 'none'
+            document.getElementById('demoTab').style.display = tab === 'demo' ? 'block' : 'none'
+        }
+
+        // ── SEND CHAT MESSAGE ──
+        function now() {
+            return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+
+        function appendMsg(container, role, text, type = '') {
+            const div = document.createElement('div')
+            div.className = `msg ${role} ${type}`
+            div.innerHTML = `<div class="msg-bubble">${text}</div><span class="msg-time">${now()}</span>`
+            container.appendChild(div)
+            container.scrollTop = container.scrollHeight
+            return div
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput')
+            const btn = document.getElementById('sendBtn')
+            const messages = document.getElementById('chatMessages')
+            const question = input.value.trim()
+            if (!question || !currentToken) return
+
+            input.value = ''
+            btn.disabled = true
+
+            appendMsg(messages, 'user', question)
+
+            const loadingDiv = document.createElement('div')
+            loadingDiv.className = 'msg ai'
+            loadingDiv.innerHTML = `<div class="msg-bubble"><div class="loading-dots"><span></span><span></span><span></span></div></div>`
+            messages.appendChild(loadingDiv)
+            messages.scrollTop = messages.scrollHeight
+
+            try {
+                const res = await fetch(`${API}/ask`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentToken}` },
+                    body: JSON.stringify({ question })
+                })
+                const data = await res.json()
+                messages.removeChild(loadingDiv)
+
+                const isBlocked = data.answer && data.answer.toLowerCase().includes('not available')
+                appendMsg(messages, 'ai', data.answer, isBlocked ? 'blocked' : 'allowed')
+            } catch {
+                messages.removeChild(loadingDiv)
+                appendMsg(messages, 'ai', 'Connection error. Is the API running?', 'blocked')
+            }
+            btn.disabled = false
+            input.focus()
+        }
+
+        // ── DEMO MODE ──
+        const DEMO_TOKENS = {}
+
+        async function getDemoToken(username, password) {
+            if (DEMO_TOKENS[username]) return DEMO_TOKENS[username]
+            const res = await fetch(`${API}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            const data = await res.json()
+            DEMO_TOKENS[username] = data.token
+            return data.token
+        }
+
+        async function askAs(username, password, question) {
+            const token = await getDemoToken(username, password)
+            const res = await fetch(`${API}/ask`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ question })
+            })
+            return await res.json()
+        }
+
+        async function runDemo() {
+            const q = document.getElementById('demoQuestion').value.trim()
+            if (!q) return
+
+            const users = [
+                { id: 'demoAlice', username: 'alice', password: 'pass123' },
+                { id: 'demoCarol', username: 'carol', password: 'pass789' },
+                { id: 'demoBob', username: 'bob', password: 'pass456' }
+            ]
+
+            users.forEach(u => {
+                const el = document.getElementById(u.id)
+                el.className = 'demo-result-body'
+                el.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div>`
+            })
+
+            await Promise.all(users.map(async u => {
+                try {
+                    const data = await askAs(u.username, u.password, q)
+                    const el = document.getElementById(u.id)
+                    const blocked = data.answer && data.answer.toLowerCase().includes('not available')
+                    el.className = `demo-result-body ${blocked ? 'blocked' : 'answered'}`
+                    el.textContent = data.answer || 'No response.'
+                } catch {
+                    document.getElementById(u.id).textContent = 'Error contacting API.'
+                }
+            }))
+        }
+
+        // enter key for login
+        document.getElementById('password').addEventListener('keydown', e => {
+            if (e.key === 'Enter') doLogin()
+        })
+    </script>
+</body>
+
+</html>
